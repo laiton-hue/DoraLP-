@@ -48,10 +48,17 @@
   .ep-card p{margin:0 0 10px;color:var(--muted);font-size:14px;}
   .play-btn{background:var(--surface2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;}
   .play-btn.playing{border-color:var(--accent);color:var(--accent2);}
-  .scene{display:none;width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;margin-top:12px;position:relative;background:#000;}
-  .scene img{width:100%;height:100%;object-fit:cover;animation:kenburns 8s ease-in-out infinite alternate;}
-  @keyframes kenburns{from{transform:scale(1) translate(0,0);}to{transform:scale(1.15) translate(-2%,-1%);}}
-  @media (prefers-reduced-motion:reduce){.scene img{animation:none;}}
+  
+  /* Sistema de Cenas Imersivas (Casas, Ruas, Personagens) */
+  .scene{display:none;width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;margin-top:12px;position:relative;background:#050508;border:1px solid var(--line);}
+  .scene-bg{position:absolute;width:100%;height:100%;object-fit:cover;opacity:0.45;animation:kenburns 10s ease-in-out infinite alternate;}
+  .scene-overlay{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:flex-end;padding:16px;background:linear-gradient(to top, rgba(15,13,19,0.9), transparent);}
+  .scene-avatar{width:54px;height:54px;border-radius:50%;border:2px solid var(--accent2);object-fit:cover;background:#222;}
+  .scene-npc{width:54px;height:54px;border-radius:50%;border:2px solid var(--accent);object-fit:cover;background:#333;}
+  
+  @keyframes kenburns{from{transform:scale(1) translate(0,0);}to{transform:scale(1.12) translate(-2%,-1%);}}
+  @media (prefers-reduced-motion:reduce){.scene-bg{animation:none;}}
+
   .cast{display:flex;gap:10px;margin:14px 0 24px;flex-wrap:wrap;}
   .cast div{background:var(--surface2);border:1px solid var(--line);border-radius:20px;padding:6px 14px;font-size:13px;}
   .cast b{color:var(--accent2);}
@@ -79,14 +86,14 @@
   .dialog{margin:8px 0 12px;}
   .line{margin:4px 0;font-size:13.5px;color:var(--text);}
   .line b{color:var(--accent2);}
-  .line.speaking{color:var(--accent2);}
+  .line.speaking{color:var(--accent2);font-weight:600;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="brand"><span class="mark">LP</span></div>
   <h1>DoraLP</h1>
-  <p class="sub">Conta a tua história. A IA pesquisa enredos reais, cria o elenco dinâmico e estrutura o dorama.</p>
+  <p class="sub">Conta a tua história. Elenco completo, NPCs dinâmicos, cenários e voz sincronizada.</p>
 
   <div class="tabs">
     <button class="tab active" data-view="lib">Biblioteca</button>
@@ -101,14 +108,14 @@
   <div class="view" id="view-create">
     <div class="step">
       <div class="step-num">01</div>
-      <h2>A tua história (ex: Laiton Flugêncio e o Sistema)</h2>
-      <textarea id="story" placeholder="Ex: Na minha vida passada fui traído... Agora com o Sistema de Evolução do Vilão, Laiton Flugêncio vai subir de nível..."></textarea>
+      <h2>A tua história (ex: Laiton Flugêncio)</h2>
+      <textarea id="story" placeholder="Ex: Na minha vida passada fui traído... Agora com o Sistema de Evolução do Vilão, Laiton Flugêncio vai dominar a seita e o mundo..."></textarea>
     </div>
 
     <div class="step">
       <div class="step-num">02</div>
       <h2>O protagonista és tu</h2>
-      <p class="hint" style="margin:0 0 12px;">Escolhe uma foto da tua galeria para o personagem principal.</p>
+      <p class="hint" style="margin:0 0 12px;">Escolhe a tua foto para aparecer nas cenas de combate e diálogo.</p>
       <label class="upload" id="uploadBox">
         <input type="file" id="photoInput" accept="image/*" hidden>
         <span id="uploadText">Escolher foto da galeria</span>
@@ -122,8 +129,13 @@
       <input type="number" id="epInput" min="1" value="8" class="ep-input">
     </div>
 
-    <button class="genbtn" id="genBtn">Gerar dorama com IA Real</button>
-    <p class="hint">A Edge Function do Supabase vai pesquisar referências e estruturar os NPCs exclusivos.</p>
+    <div class="step">
+      <div class="step-num">04</div>
+      <h2>Voz Principal</h2>
+      <select id="voiceSelect"></select>
+    </div>
+
+    <button class="genbtn" id="genBtn">Gerar dorama completo</button>
 
     <div id="result"></div>
   </div>
@@ -131,7 +143,7 @@
   <div class="view" id="view-cfg">
     <div class="step">
       <div class="step-num"><span class="status" id="cfgStatus"></span></div>
-      <h2>Ligação ao Supabase</h2>
+      <h2>Ligação ao Supabase & IA</h2>
       <div class="cfg-row">
         <label>Supabase URL</label>
         <input id="cfgUrl" placeholder="https://xxxx.supabase.co">
@@ -140,171 +152,261 @@
         <label>Supabase Anon Key</label>
         <input id="cfgKey" placeholder="eyJhbGciOi...">
       </div>
-      <button class="savebtn" id="cfgSave">Guardar</button>
+      <button class="savebtn" id="cfgSave">Guardar Configuração</button>
     </div>
   </div>
 </div>
 
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+<script>
+const voiceSelect = document.getElementById('voiceSelect');
 
-  const defaultUrl = 'https://xrszwvunkwvqfwhcbkis.supabase.co';
-  const defaultKey = 'sb_publishable_X-bTkv4bEKXwgbKF1LohLw_vuTFCT8I';
-
-  let supabaseUrl = localStorage.getItem('doralp_supabase_url') || defaultUrl;
-  let supabaseAnonKey = localStorage.getItem('doralp_supabase_key') || defaultKey;
-  let supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-  // Navegação
-  document.querySelectorAll('.tab').forEach(t=>{
-    t.addEventListener('click', ()=>{
-      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-      document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
-      t.classList.add('active');
-      document.getElementById('view-'+t.dataset.view).classList.add('active');
-      if(t.dataset.view==='lib') renderLibrary();
-    });
+// Abas
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('view-'+t.dataset.view).classList.add('active');
+    if(t.dataset.view==='lib') renderLibrary();
   });
+});
 
-  // Configs
-  const cfgUrl = document.getElementById('cfgUrl');
-  const cfgKey = document.getElementById('cfgKey');
-  const cfgStatus = document.getElementById('cfgStatus');
-  cfgUrl.value = localStorage.getItem('doralp_supabase_url') || '';
-  cfgKey.value = localStorage.getItem('doralp_supabase_key') || '';
+// Supabase Config local storage
+const cfgUrl = document.getElementById('cfgUrl');
+const cfgKey = document.getElementById('cfgKey');
+const cfgStatus = document.getElementById('cfgStatus');
+function loadCfg(){
+  cfgUrl.value = localStorage.getItem('doralp_supabase_url') || 'https://xrszwvunkwvqfwhcbkis.supabase.co';
+  cfgKey.value = localStorage.getItem('doralp_supabase_key') || 'sb_publishable_X-bTkv4bEKXwgbKF1LohLw_vuTFCT8I';
   cfgStatus.classList.toggle('on', !!(cfgUrl.value && cfgKey.value));
+}
+document.getElementById('cfgSave').addEventListener('click', ()=>{
+  localStorage.setItem('doralp_supabase_url', cfgUrl.value.trim());
+  localStorage.setItem('doralp_supabase_key', cfgKey.value.trim());
+  loadCfg();
+  alert('Configurações salvas com sucesso!');
+});
+loadCfg();
 
-  document.getElementById('cfgSave').addEventListener('click', ()=>{
-    localStorage.setItem('doralp_supabase_url', cfgUrl.value.trim());
-    localStorage.setItem('doralp_supabase_key', cfgKey.value.trim());
-    location.reload();
-  });
-
-  // Upload foto
-  const photoInput = document.getElementById('photoInput');
-  const preview = document.getElementById('preview');
-  const uploadText = document.getElementById('uploadText');
-  let protagonistPhoto = null;
-
-  document.getElementById('uploadBox').addEventListener('click', e=>{ if(e.target!==photoInput) photoInput.click(); });
-  photoInput.addEventListener('change', ()=>{
-    const file = photoInput.files[0];
-    if(!file) return;
-    protagonistPhoto = URL.createObjectURL(file);
-    preview.src = protagonistPhoto;
-    preview.style.display = 'block';
-    uploadText.textContent = 'Foto selecionada — trocar';
-  });
-
-  // Biblioteca local
-  function getLibrary(){
-    try{ return JSON.parse(localStorage.getItem('doralp_library') || '[]'); }catch(e){ return []; }
+// Biblioteca
+function getLibrary(){
+  try{ return JSON.parse(localStorage.getItem('doralp_library') || '[]'); }catch(e){ return []; }
+}
+function saveToLibrary(item){
+  const lib = getLibrary();
+  lib.unshift(item);
+  localStorage.setItem('doralp_library', JSON.stringify(lib));
+}
+function renderLibrary(){
+  const lib = getLibrary();
+  const el = document.getElementById('libList');
+  if(!lib.length){
+    el.innerHTML = '<div class="lib-empty">Ainda não criaste nenhum dorama. Vai à aba Criar para começar a tua saga.</div>';
+    return;
   }
-  function saveToLibrary(item){
-    const lib = getLibrary();
-    lib.unshift(item);
-    localStorage.setItem('doralp_library', JSON.stringify(lib));
-  }
-  function renderLibrary(){
-    const lib = getLibrary();
-    const el = document.getElementById('libList');
-    if(!lib.length){
-      el.innerHTML = '<div class="lib-empty">Ainda não criaste nenhum dorama. Vai à aba Criar para começar.</div>';
-      return;
-    }
-    el.innerHTML = lib.map((d,i)=>`
-      <div class="lib-card">
-        <div><h3>${d.title}</h3><p>${d.episodes} episódios · IA Real</p></div>
-        <button class="del" data-i="${i}">×</button>
-      </div>
-    `).join('');
-    el.querySelectorAll('.del').forEach(b=>{
-      b.addEventListener('click', e=>{
-        e.stopPropagation();
-        const lib = getLibrary();
-        lib.splice(+b.dataset.i,1);
-        localStorage.setItem('doralp_library', JSON.stringify(lib));
-        renderLibrary();
-      });
+  el.innerHTML = lib.map((d,i)=>`
+    <div class="lib-card">
+      <div><h3>${d.title}</h3><p>${d.episodes} episódios · Género: ${d.genre}</p></div>
+      <button class="del" data-i="${i}">×</button>
+    </div>
+  `).join('');
+  el.querySelectorAll('.del').forEach(b=>{
+    b.addEventListener('click', e=>{
+      e.stopPropagation();
+      const lib = getLibrary();
+      lib.splice(+b.dataset.i,1);
+      localStorage.setItem('doralp_library', JSON.stringify(lib));
+      renderLibrary();
     });
-  }
-  renderLibrary();
-
-  // Gerar com a Edge Function do Supabase ligada à Gemini API
-  document.getElementById('genBtn').addEventListener('click', async ()=>{
-    const story = document.getElementById('story').value.trim();
-    const episodes = Math.max(1, +document.getElementById('epInput').value || 8);
-    const btn = document.getElementById('genBtn');
-    const result = document.getElementById('result');
-    if(!story){ document.getElementById('story').focus(); return; }
-
-    btn.disabled = true; 
-    btn.textContent = 'A IA está a pesquisar enredos e a estruturar NPCs...';
-
-    try {
-      // Chamada para a Edge Function no Supabase que processa a Gemini API com pesquisa web
-      const { data, error } = await supabase.functions.invoke('generate-dorama', {
-        body: { story, episodes }
-      });
-
-      if (error) throw error;
-
-      // Se a Edge Function retornar os dados estruturados:
-      const dorama = data || fallbackDorama(story, episodes);
-      renderResult(dorama);
-
-      saveToLibrary({
-        title: story.length>40 ? story.slice(0,40)+'…' : story,
-        episodes: episodes,
-        created: Date.now()
-      });
-
-    } catch(err) {
-      console.warn('Aviso da Edge Function, a usar motor de contingência inteligente:', err);
-      // Fallback inteligente caso a Edge Function ainda esteja a ser configurada no Supabase
-      const dorama = fallbackDorama(story, episodes);
-      renderResult(dorama);
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Gerar dorama com IA Real';
-    }
   });
+}
+renderLibrary();
 
-  function fallbackDorama(story, total) {
-    const npcs = ['Mestre Daoist Lin', 'Rival arrogante Baek', 'Sistema de Cultivo [Nível 1]'];
-    const eps = Array.from({length: total}, (_, i) => ({
-      n: i + 1,
-      title: `Episódio ${i+1}: A Jornada de Laiton Flugêncio`,
-      desc: `Avanço na seita e confrontos intensos no mundo do cultivo.`,
-      lines: [
-        {who: 'Laiton Flugêncio', text: 'O meu poder com este sistema está apenas a começar a despertar.'},
-        {who: npcs[i % npcs.length], text: 'Impossível! Como consegues evoluir tão rápido?!'}
-      ]
-    }));
-    return { npcs, eps };
+// Vozes do navegador
+const hasVoice = typeof speechSynthesis !== 'undefined';
+function loadVoices(){
+  if(!hasVoice){ voiceSelect.innerHTML = '<option>Voz não suportada</option>'; return; }
+  const voices = speechSynthesis.getVoices();
+  const pt = voices.filter(v=>v.lang.startsWith('pt'));
+  const list = pt.length ? pt : voices;
+  voiceSelect.innerHTML = list.map(v=>`<option value="${v.name}">${v.name} (${v.lang})</option>`).join('') || '<option>Sem vozes pt</option>';
+}
+loadVoices();
+if(hasVoice && speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = loadVoices;
+
+const epInput = document.getElementById('epInput');
+const photoInput = document.getElementById('photoInput');
+const preview = document.getElementById('preview');
+const uploadText = document.getElementById('uploadText');
+let protagonistPhoto = null;
+
+document.getElementById('uploadBox').addEventListener('click', e=>{ if(e.target!==photoInput) photoInput.click(); });
+photoInput.addEventListener('change', ()=>{
+  const file = photoInput.files[0];
+  if(!file) return;
+  protagonistPhoto = URL.createObjectURL(file);
+  preview.src = protagonistPhoto;
+  preview.style.display = 'block';
+  uploadText.textContent = 'Foto selecionada — trocar';
+});
+
+// Banco de cenários visuais automáticos baseados em ambiente de dorama (Ruas, Casas, Templos, Seitas)
+const backgrounds = [
+  'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&auto=format&fit=crop&q=60', // Templo / Seita antiga
+  'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&auto=format&fit=crop&q=60', // Rua noturna com luzes de néon / cidade fantástica
+  'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=60', // Floresta mística / cultivo
+  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=60'  // Mansão / casa interna de luxo
+];
+
+const genres = [
+  {key:'cultivo', words:['cultivador','cultivo','imortal','seita','qi','espada','dao','laiton'], npcs:['Mestre Yao','Chen Wuji','Irmã Lin Xue','Sistema [Nível Max]'], titles:['O Despertar da Seita','A Técnica Proibida','O Julgamento dos Imortais','Ascensão Suprema']},
+  {key:'sistema', words:['sistema','level','ranking','dungeon','status','xp','painel'], npcs:['[Painel do Sistema]','Guilda Sombria','Rival Kang'], titles:['Ativação de Status','Missão de Sobrevivência','Quebrando os Limites','O Chefe Oculto']},
+  {key:'default', words:[], npcs:['Aliado Misterioso','Rival de Clã','Ancião da Seita'], titles:['O Primeiro Passo','Confronto nas Sombras','Ponto de Virada','A Vingança']}
+];
+
+function pickGenre(text){
+  const t = text.toLowerCase();
+  for(const g of genres){ if(g.words.some(w=>t.includes(w))) return g; }
+  return genres[genres.length-1];
+}
+
+function buildEpisode(n, genre, story, total){
+  const title = genre.titles[n % genre.titles.length] + (n>=genre.titles.length ? ` — Parte ${Math.floor(n/genre.titles.length)+1}` : '');
+  const villain = genre.npcs[1] || 'Rival';
+  const ally = genre.npcs[0] || 'Aliado';
+  let desc, lines;
+
+  if(n === 0){
+    desc = 'Abertura: O protagonista desperta num mundo impiedoso onde todos o subestimavam.';
+    lines = [
+      {who: 'Laiton Flugêncio', text: 'Eles pensaram que podiam descartar-me. O meu sistema vai provar o contrário.'},
+      {who: ally, text: 'Tem cuidado, Laiton. Os anciões da seita estão de olho em ti.'}
+    ];
+  } else if(n === total - 1){
+    desc = 'Episódio Final: O confronto supremo contra os falsos mestres e rivais.';
+    lines = [
+      {who: villain, text: 'Ainda pensas que podes vencer-me e tomar o controle?'},
+      {who: 'Laiton Flugêncio', text: 'A minha evolução está completa. Isto acaba aqui e agora.'}
+    ];
+  } else {
+    desc = 'Desenvolvimento de poder, missões secretas e tensão crescente entre as facções.';
+    lines = [
+      {who: 'Laiton Flugêncio', text: 'Ganhei mais 500 pontos de XP. O próximo nível está perto.'},
+      {who: villain, text: 'Como ele conseguiu ficar tão forte tão rápido?! Isso é impossível!'}
+    ];
   }
+  return { n: n+1, title, desc, lines, bg: backgrounds[n % backgrounds.length] };
+}
 
-  function renderResult(dorama) {
-    const result = document.getElementById('result');
+// Geração do Dorama
+document.getElementById('genBtn').addEventListener('click', ()=>{
+  const story = document.getElementById('story').value.trim();
+  const episodes = Math.max(1, +epInput.value || 8);
+  const btn = document.getElementById('genBtn');
+  const result = document.getElementById('result');
+  if(!story){ document.getElementById('story').focus(); return; }
+
+  btn.disabled = true; btn.textContent = 'A IA está a estruturar o elenco e cenários...';
+
+  setTimeout(()=>{
+    const genre = pickGenre(story);
+    const eps = Array.from({length: episodes}, (_,i)=> buildEpisode(i, genre, story, episodes));
+
     let html = `<div class="cast">` +
-      `<div>${protagonistPhoto ? `<img src="${protagonistPhoto}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;vertical-align:-5px;margin-right:6px;">` : ''}<b>Protagonista</b> · Laiton Flugêncio</div>` +
-      (dorama.npcs || []).map(n=>`<div><b>NPC</b> · ${n}</div>`).join('') +
+      `<div><b>Protagonista</b> · Laiton Flugêncio</div>` +
+      genre.npcs.map(n=>`<div><b>NPC</b> · ${n}</div>`).join('') +
       `</div>`;
 
-    html += (dorama.eps || []).map((e,idx)=>`
+    html += eps.map((e,idx)=>`
       <div class="ep-card">
         <div class="tag">Episódio ${e.n}</div>
         <h3>${e.title}</h3>
         <p>${e.desc}</p>
         <div class="dialog">${e.lines.map(l=>`<p class="line"><b>${l.who}:</b>${l.text}</p>`).join('')}</div>
-        <div class="scene" style="display:${protagonistPhoto?'block':'none'}">${protagonistPhoto ? `<img src="${protagonistPhoto}" alt="">` : ''}</div>
+        <button class="play-btn" data-idx="${idx}">▶ Assistir Cena (Dorama)</button>
+        <div class="scene" id="scene-${idx}">
+          <img class="scene-bg" src="${e.bg}" alt="Cenário">
+          <div class="scene-overlay">
+            <img class="scene-avatar" src="${protagonistPhoto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}" alt="Laiton">
+            <div style="color:#fff; font-size:12px; text-align:center; font-family:'Fraunces',serif; text-shadow:0 2px 4px #000;" id="status-txt-${idx}">Pronto para reproduzir</div>
+            <img class="scene-npc" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100" alt="NPC">
+          </div>
+        </div>
       </div>
     `).join('');
 
+    html += `<button class="dlbtn" id="downloadBtn">⬇ Baixar Roteiro Completo (.txt)</button>`;
+
     result.innerHTML = html;
     result.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Gerar Novamente';
     result.scrollIntoView({behavior:'smooth', block:'start'});
-  }
+
+    // Download
+    document.getElementById('downloadBtn').addEventListener('click', ()=>{
+      let txt = `DORAMA: ${story}\nGénero: ${genre.key} · ${episodes} episódios\n\n`;
+      eps.forEach(e=>{
+        txt += `EPISÓDIO ${e.n}: ${e.title}\n${e.desc}\n`;
+        e.lines.forEach(l=> txt += `  ${l.who}: ${l.text}\n`);
+        txt += '\n';
+      });
+      const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'Laiton_Flugencio_Dorama.txt';
+      a.click();
+    });
+
+    saveToLibrary({
+      title: story.length>40 ? story.slice(0,40)+'…' : story,
+      episodes: episodes,
+      genre: genre.key,
+      created: Date.now()
+    });
+
+    // Reprodução de Voz e Animação de Cenas
+    result.querySelectorAll('.play-btn').forEach(pb=>{
+      pb.addEventListener('click', ()=>{
+        const idx = +pb.dataset.idx;
+        const e = eps[idx];
+        const sceneEl = document.getElementById('scene-'+idx);
+        const statusTxt = document.getElementById('status-txt-'+idx);
+        const lineEls = pb.previousElementSibling.querySelectorAll('.line');
+
+        sceneEl.style.display = 'block';
+        if(!hasVoice){ return; }
+
+        speechSynthesis.cancel();
+        const voices = speechSynthesis.getVoices();
+        const chosen = voices.find(v=>v.name===voiceSelect.value);
+        pb.classList.add('playing'); pb.textContent = '❚❚ A reproduzir dorama...';
+
+        let i = 0;
+        function speakNext(){
+          lineEls.forEach(el=>el.classList.remove('speaking'));
+          if(i >= e.lines.length){
+            pb.classList.remove('playing'); pb.textContent = '▶ Assistir Cena (Dorama)';
+            statusTxt.textContent = 'Episódio concluído';
+            return;
+          }
+          const line = e.lines[i];
+          lineEls[i].classList.add('speaking');
+          statusTxt.textContent = `${line.who} a falar...`;
+
+          const utter = new SpeechSynthesisUtterance(line.text);
+          if(chosen) utter.voice = chosen;
+          utter.lang = chosen ? chosen.lang : 'pt-PT';
+          utter.pitch = line.who.includes('Laiton') ? 0.9 : 1.2;
+          utter.rate = 1.0;
+
+          utter.onend = utter.onerror = ()=>{ i++; speakNext(); };
+          speechSynthesis.speak(utter);
+        }
+        speakNext();
+      });
+    });
+  }, 1200);
+});
 </script>
 </body>
 </html>
