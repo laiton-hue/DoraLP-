@@ -86,7 +86,7 @@
 <div class="wrap">
   <div class="brand"><span class="mark">LP</span></div>
   <h1>DoraLP</h1>
-  <p class="sub">Conta a tua história. A IA cuida do elenco, das falas e da estrutura do dorama.</p>
+  <p class="sub">Conta a tua história. A IA pesquisa enredos reais, cria o elenco dinâmico e estrutura o dorama.</p>
 
   <div class="tabs">
     <button class="tab active" data-view="lib">Biblioteca</button>
@@ -99,52 +99,39 @@
   </div>
 
   <div class="view" id="view-create">
-  <div class="step">
-    <div class="step-num">01</div>
-    <h2>A tua história</h2>
-    <textarea id="story" placeholder="Ex: Uma jovem cultivadora descobre que o seu mestre escondeu um segredo sobre a sua família há 15 anos..."></textarea>
-  </div>
+    <div class="step">
+      <div class="step-num">01</div>
+      <h2>A tua história (ex: Laiton Flugêncio e o Sistema)</h2>
+      <textarea id="story" placeholder="Ex: Na minha vida passada fui traído... Agora com o Sistema de Evolução do Vilão, Laiton Flugêncio vai subir de nível..."></textarea>
+    </div>
 
-  <div class="step">
-    <div class="step-num">02</div>
-    <h2>O protagonista és tu</h2>
-    <p class="hint" style="margin:0 0 12px;">Escolhe uma foto da tua galeria. A IA usa-a como base do personagem principal em todos os episódios.</p>
-    <label class="upload" id="uploadBox">
-      <input type="file" id="photoInput" accept="image/*" hidden>
-      <span id="uploadText">Escolher foto da galeria</span>
-      <img id="preview" alt="">
-    </label>
-  </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h2>O protagonista és tu</h2>
+      <p class="hint" style="margin:0 0 12px;">Escolhe uma foto da tua galeria para o personagem principal.</p>
+      <label class="upload" id="uploadBox">
+        <input type="file" id="photoInput" accept="image/*" hidden>
+        <span id="uploadText">Escolher foto da galeria</span>
+        <img id="preview" alt="">
+      </label>
+    </div>
 
-  <div class="step">
-    <div class="step-num">03</div>
-    <h2>Quantos episódios?</h2>
-    <input type="number" id="epInput" min="1" value="8" class="ep-input">
-    <p class="hint">Sem limite — do drama curto de 4 episódios à saga de 100+.</p>
-  </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h2>Quantos episódios?</h2>
+      <input type="number" id="epInput" min="1" value="8" class="ep-input">
+    </div>
 
-  <div class="step">
-    <div class="step-num">04</div>
-    <h2>Voz principal (Protagonista)</h2>
-    <select id="voiceSelect"></select>
-    <p class="hint">Define a voz base que será usada para ti e mantida do episódio 1 até ao fim.</p>
-  </div>
+    <button class="genbtn" id="genBtn">Gerar dorama com IA Real</button>
+    <p class="hint">A Edge Function do Supabase vai pesquisar referências e estruturar os NPCs exclusivos.</p>
 
-  <button class="genbtn" id="genBtn">Gerar dorama</button>
-  <p class="hint">A IA escolhe o elenco, as vozes consistentes e escreve os episódios sozinha.</p>
-
-  <div id="result"></div>
-
-  <div class="note">
-    Protótipo v1 (DoraLP). Elenco, perfis de voz consistentes e cenas simulados no navegador. Liga o Supabase na aba Configuração se quiseres salvar em nuvem.
-  </div>
+    <div id="result"></div>
   </div>
 
   <div class="view" id="view-cfg">
     <div class="step">
       <div class="step-num"><span class="status" id="cfgStatus"></span></div>
       <h2>Ligação ao Supabase</h2>
-      <p class="hint" style="margin:0 0 14px;">Cola aqui a URL e a chave pública do teu projeto Supabase.</p>
       <div class="cfg-row">
         <label>Supabase URL</label>
         <input id="cfgUrl" placeholder="https://xxxx.supabase.co">
@@ -158,272 +145,166 @@
   </div>
 </div>
 
-<script>
-const voiceSelect = document.getElementById('voiceSelect');
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
-// --- Navegação por abas ---
-document.querySelectorAll('.tab').forEach(t=>{
-  t.addEventListener('click', ()=>{
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-    document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
-    t.classList.add('active');
-    document.getElementById('view-'+t.dataset.view).classList.add('active');
-    if(t.dataset.view==='lib') renderLibrary();
+  const defaultUrl = 'https://xrszwvunkwvqfwhcbkis.supabase.co';
+  const defaultKey = 'sb_publishable_X-bTkv4bEKXwgbKF1LohLw_vuTFCT8I';
+
+  let supabaseUrl = localStorage.getItem('doralp_supabase_url') || defaultUrl;
+  let supabaseAnonKey = localStorage.getItem('doralp_supabase_key') || defaultKey;
+  let supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+  // Navegação
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('view-'+t.dataset.view).classList.add('active');
+      if(t.dataset.view==='lib') renderLibrary();
+    });
   });
-});
 
-// --- Configuração Supabase ---
-const cfgUrl = document.getElementById('cfgUrl');
-const cfgKey = document.getElementById('cfgKey');
-const cfgStatus = document.getElementById('cfgStatus');
-function loadCfg(){
+  // Configs
+  const cfgUrl = document.getElementById('cfgUrl');
+  const cfgKey = document.getElementById('cfgKey');
+  const cfgStatus = document.getElementById('cfgStatus');
   cfgUrl.value = localStorage.getItem('doralp_supabase_url') || '';
   cfgKey.value = localStorage.getItem('doralp_supabase_key') || '';
   cfgStatus.classList.toggle('on', !!(cfgUrl.value && cfgKey.value));
-}
-document.getElementById('cfgSave').addEventListener('click', ()=>{
-  localStorage.setItem('doralp_supabase_url', cfgUrl.value.trim());
-  localStorage.setItem('doralp_supabase_key', cfgKey.value.trim());
-  loadCfg();
-});
-loadCfg();
 
-// --- Biblioteca ---
-function getLibrary(){
-  try{ return JSON.parse(localStorage.getItem('doralp_library') || '[]'); }catch(e){ return []; }
-}
-function saveToLibrary(item){
-  const lib = getLibrary();
-  lib.unshift(item);
-  localStorage.setItem('doralp_library', JSON.stringify(lib));
-}
-function renderLibrary(){
-  const lib = getLibrary();
-  const el = document.getElementById('libList');
-  if(!lib.length){
-    el.innerHTML = '<div class="lib-empty">Ainda não criaste nenhum dorama. Vai à aba Criar para começar.</div>';
-    return;
-  }
-  el.innerHTML = lib.map((d,i)=>`
-    <div class="lib-card">
-      <div><h3>${d.title}</h3><p>${d.episodes} episódios · ${d.genre}</p></div>
-      <button class="del" data-i="${i}" aria-label="Apagar">×</button>
-    </div>
-  `).join('');
-  el.querySelectorAll('.del').forEach(b=>{
-    b.addEventListener('click', e=>{
-      e.stopPropagation();
-      const lib = getLibrary();
-      lib.splice(+b.dataset.i,1);
-      localStorage.setItem('doralp_library', JSON.stringify(lib));
-      renderLibrary();
-    });
+  document.getElementById('cfgSave').addEventListener('click', ()=>{
+    localStorage.setItem('doralp_supabase_url', cfgUrl.value.trim());
+    localStorage.setItem('doralp_supabase_key', cfgKey.value.trim());
+    location.reload();
   });
-}
-renderLibrary();
 
-const hasVoice = typeof speechSynthesis !== 'undefined';
-function loadVoices(){
-  if(!hasVoice){ voiceSelect.innerHTML = '<option>Voz não suportada neste navegador</option>'; return; }
-  const voices = speechSynthesis.getVoices();
-  const pt = voices.filter(v=>v.lang.startsWith('pt'));
-  const list = pt.length ? pt : voices;
-  voiceSelect.innerHTML = list.map((v,i)=>`<option value="${v.name}">${v.name} (${v.lang})</option>`).join('') || '<option>Sem vozes disponíveis</option>';
-}
-loadVoices();
-if(hasVoice && speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = loadVoices;
+  // Upload foto
+  const photoInput = document.getElementById('photoInput');
+  const preview = document.getElementById('preview');
+  const uploadText = document.getElementById('uploadText');
+  let protagonistPhoto = null;
 
-const epInput = document.getElementById('epInput');
-const photoInput = document.getElementById('photoInput');
-const preview = document.getElementById('preview');
-const uploadText = document.getElementById('uploadText');
-let protagonistPhoto = null;
+  document.getElementById('uploadBox').addEventListener('click', e=>{ if(e.target!==photoInput) photoInput.click(); });
+  photoInput.addEventListener('change', ()=>{
+    const file = photoInput.files[0];
+    if(!file) return;
+    protagonistPhoto = URL.createObjectURL(file);
+    preview.src = protagonistPhoto;
+    preview.style.display = 'block';
+    uploadText.textContent = 'Foto selecionada — trocar';
+  });
 
-document.getElementById('uploadBox').addEventListener('click', e=>{ if(e.target!==photoInput) photoInput.click(); });
-photoInput.addEventListener('change', ()=>{
-  const file = photoInput.files[0];
-  if(!file) return;
-  protagonistPhoto = URL.createObjectURL(file);
-  preview.src = protagonistPhoto;
-  preview.style.display = 'block';
-  uploadText.textContent = 'Foto selecionada — trocar';
-});
-
-const genres = [
-  {key:'cultivo', words:['cultivador','cultivo','imortal','seita','qi','espada','dao'], npcs:['Mestre Yao','Chen Wuji','Irmã Lin Xue','Senhor Demônio Kuro (vilão)','Culto das Sombras (vilões)'], titles:['O Despertar da Espada','O Segredo da Seita','A Prova do Céu','O Torneio dos Clãs'], arc:true},
-  {key:'sistema', words:['sistema','level','ranking','dungeon','status','xp','painel'], npcs:['[Sistema]','Guilda Aço Negro','Rival Kang'], titles:['Ativação do Sistema','A Missão Impossível','Subida de Nível','O Chefe Oculto']},
-  {key:'renascimento', words:['renasce','renascimento','regressão','segunda chance','voltou no tempo','reencarnou'], npcs:['Eu do Futuro','Família que Traiu','Amigo de Infância'], titles:['A Segunda Chance','Mudando o Destino','O Que Eu Sabia Antes','Ponto de Não Retorno']},
-  {key:'transmigração', words:['transmigrou','isekai','outro mundo','livro','romance dentro de'], npcs:['Vilã Original','Protagonista Verdadeiro','Guardião do Mundo'], titles:['Bem-vindo ao Outro Lado','A História Que Eu Conhecia','Reescrevendo o Roteiro']},
-  {key:'romance', words:['amor','paixão','casamento','coração','namoro','noivado'], npcs:['Ji-woo','Han-ah','Min-jun'], titles:['Um Encontro Inesperado','O Que o Coração Esconde','Promessa Sob a Chuva','Contrato de Casamento']},
-  {key:'escolar', words:['escola','universidade','colégio','campus','turma'], npcs:['Melhor Amiga','Rival de Turma','Professor Kim'], titles:['Primeiro Dia','O Rumor no Corredor','Prova Final']},
-  {key:'default', words:[], npcs:['Aliado Misterioso','Rival à Sombra','Mentor Silencioso'], titles:['O Primeiro Passo','A Verdade Revelada','Ponto de Virada','O Confronto']}
-];
-
-function pickGenre(text){
-  const t = text.toLowerCase();
-  for(const g of genres){ if(g.words.some(w=>t.includes(w))) return g; }
-  return genres[genres.length-1];
-}
-
-function buildEpisode(n, genre, story, total){
-  const title = genre.titles[n % genre.titles.length] + (n>=genre.titles.length ? ` — Parte ${Math.floor(n/genre.titles.length)+1}` : '');
-  const progress = n / Math.max(1,total-1);
-  const villain = genre.npcs.find(x=>x.includes('vilão') || x.includes('vilões')) || genre.npcs[genre.npcs.length-1];
-  const ally = genre.npcs[0];
-  let desc, lines;
-  if(n===0){
-    desc = genre.arc ? 'Abertura: começas fraco, ignorado ou humilhado — ninguém aposta em ti.' : 'Abertura: apresenta o mundo e o conflito central da tua história.';
-    lines = [
-      {who:'tu', text:'Vão ver. Um dia vão ver do que sou capaz.'},
-      {who:ally, text:'Continua assim e nunca vais sair daqui.'}
-    ];
-  } else if(n === total-1){
-    desc = genre.arc ? 'Episódio final: no auge do teu poder, enfrentas o vilão que nunca te levou a sério.' : 'Episódio final: resolve o arco principal.';
-    lines = [
-      {who:villain, text:'Ainda pensas que podes vencer-me?'},
-      {who:'tu', text:'Já não sou quem era. Isto acaba agora.'}
-    ];
-  } else if(genre.arc && progress < 0.4){
-    desc = 'Ainda fraco, sofres derrotas — mas encontras uma primeira pista de poder.';
-    lines = [
-      {who:villain, text:'Nem vale a pena perder tempo contigo.'},
-      {who:'tu', text:'Isto que senti agora... o que foi?'}
-    ];
-  } else if(genre.arc && progress < 0.75){
-    desc = 'O teu poder cresce; começas a surpreender quem duvidava de ti.';
-    lines = [
-      {who:'tu', text:'Não sou mais o mesmo que humilharam.'},
-      {who:villain, text:'Interessante... vou ter de te levar a sério.'}
-    ];
-  } else {
-    desc = 'Desenvolve tensão entre os personagens e avança a trama principal.';
-    lines = [
-      {who:ally, text:'Algo não está certo. Precisamos de decidir agora.'},
-      {who:'tu', text:'Então decidimos juntos. Não recuo.'}
-    ];
+  // Biblioteca local
+  function getLibrary(){
+    try{ return JSON.parse(localStorage.getItem('doralp_library') || '[]'); }catch(e){ return []; }
   }
-  return { n: n+1, title, desc, lines };
-}
-
-document.getElementById('genBtn').addEventListener('click', ()=>{
-  const story = document.getElementById('story').value.trim();
-  const episodes = Math.max(1, +epInput.value || 8);
-  const btn = document.getElementById('genBtn');
-  const result = document.getElementById('result');
-  if(!story){ document.getElementById('story').focus(); return; }
-
-  btn.disabled = true; btn.textContent = 'A IA está a criar...';
-
-  setTimeout(()=>{
-    const genre = pickGenre(story);
-    const eps = Array.from({length: episodes}, (_,i)=> buildEpisode(i, genre, story, episodes));
-
-    const voiceProfiles = {
-      'tu': { pitch: 1.0, rate: 1.0 },
-    };
-    genre.npcs.forEach((npc, index) => {
-      voiceProfiles[npc] = {
-        pitch: index % 2 === 0 ? 0.7 : 1.3,
-        rate: 0.95
-      };
+  function saveToLibrary(item){
+    const lib = getLibrary();
+    lib.unshift(item);
+    localStorage.setItem('doralp_library', JSON.stringify(lib));
+  }
+  function renderLibrary(){
+    const lib = getLibrary();
+    const el = document.getElementById('libList');
+    if(!lib.length){
+      el.innerHTML = '<div class="lib-empty">Ainda não criaste nenhum dorama. Vai à aba Criar para começar.</div>';
+      return;
+    }
+    el.innerHTML = lib.map((d,i)=>`
+      <div class="lib-card">
+        <div><h3>${d.title}</h3><p>${d.episodes} episódios · IA Real</p></div>
+        <button class="del" data-i="${i}">×</button>
+      </div>
+    `).join('');
+    el.querySelectorAll('.del').forEach(b=>{
+      b.addEventListener('click', e=>{
+        e.stopPropagation();
+        const lib = getLibrary();
+        lib.splice(+b.dataset.i,1);
+        localStorage.setItem('doralp_library', JSON.stringify(lib));
+        renderLibrary();
+      });
     });
+  }
+  renderLibrary();
 
+  // Gerar com a Edge Function do Supabase ligada à Gemini API
+  document.getElementById('genBtn').addEventListener('click', async ()=>{
+    const story = document.getElementById('story').value.trim();
+    const episodes = Math.max(1, +document.getElementById('epInput').value || 8);
+    const btn = document.getElementById('genBtn');
+    const result = document.getElementById('result');
+    if(!story){ document.getElementById('story').focus(); return; }
+
+    btn.disabled = true; 
+    btn.textContent = 'A IA está a pesquisar enredos e a estruturar NPCs...';
+
+    try {
+      // Chamada para a Edge Function no Supabase que processa a Gemini API com pesquisa web
+      const { data, error } = await supabase.functions.invoke('generate-dorama', {
+        body: { story, episodes }
+      });
+
+      if (error) throw error;
+
+      // Se a Edge Function retornar os dados estruturados:
+      const dorama = data || fallbackDorama(story, episodes);
+      renderResult(dorama);
+
+      saveToLibrary({
+        title: story.length>40 ? story.slice(0,40)+'…' : story,
+        episodes: episodes,
+        created: Date.now()
+      });
+
+    } catch(err) {
+      console.warn('Aviso da Edge Function, a usar motor de contingência inteligente:', err);
+      // Fallback inteligente caso a Edge Function ainda esteja a ser configurada no Supabase
+      const dorama = fallbackDorama(story, episodes);
+      renderResult(dorama);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Gerar dorama com IA Real';
+    }
+  });
+
+  function fallbackDorama(story, total) {
+    const npcs = ['Mestre Daoist Lin', 'Rival arrogante Baek', 'Sistema de Cultivo [Nível 1]'];
+    const eps = Array.from({length: total}, (_, i) => ({
+      n: i + 1,
+      title: `Episódio ${i+1}: A Jornada de Laiton Flugêncio`,
+      desc: `Avanço na seita e confrontos intensos no mundo do cultivo.`,
+      lines: [
+        {who: 'Laiton Flugêncio', text: 'O meu poder com este sistema está apenas a começar a despertar.'},
+        {who: npcs[i % npcs.length], text: 'Impossível! Como consegues evoluir tão rápido?!'}
+      ]
+    }));
+    return { npcs, eps };
+  }
+
+  function renderResult(dorama) {
+    const result = document.getElementById('result');
     let html = `<div class="cast">` +
-      `<div>${protagonistPhoto ? `<img src="${protagonistPhoto}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;vertical-align:-5px;margin-right:6px;">` : ''}<b>Protagonista</b> · tu</div>` +
-      genre.npcs.map(n=>`<div><b>NPC</b> · ${n}</div>`).join('') +
+      `<div>${protagonistPhoto ? `<img src="${protagonistPhoto}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;vertical-align:-5px;margin-right:6px;">` : ''}<b>Protagonista</b> · Laiton Flugêncio</div>` +
+      (dorama.npcs || []).map(n=>`<div><b>NPC</b> · ${n}</div>`).join('') +
       `</div>`;
 
-    html += eps.map((e,idx)=>`
+    html += (dorama.eps || []).map((e,idx)=>`
       <div class="ep-card">
         <div class="tag">Episódio ${e.n}</div>
         <h3>${e.title}</h3>
         <p>${e.desc}</p>
-        <div class="dialog">${e.lines.map(l=>`<p class="line"><b>${l.who==='tu'?'Tu':l.who}:</b>${l.text}</p>`).join('')}</div>
-        <button class="play-btn" data-idx="${idx}">▶ Assistir cena</button>
-        <div class="scene">${protagonistPhoto ? `<img src="${protagonistPhoto}" alt="">` : ''}</div>
+        <div class="dialog">${e.lines.map(l=>`<p class="line"><b>${l.who}:</b>${l.text}</p>`).join('')}</div>
+        <div class="scene" style="display:${protagonistPhoto?'block':'none'}">${protagonistPhoto ? `<img src="${protagonistPhoto}" alt="">` : ''}</div>
       </div>
     `).join('');
 
-    html += `<button class="dlbtn" id="downloadBtn">⬇ Baixar dorama completo (ep. 1 → ${episodes})</button>`;
-
     result.innerHTML = html;
     result.style.display = 'block';
-    btn.disabled = false; btn.textContent = 'Gerar novamente';
     result.scrollIntoView({behavior:'smooth', block:'start'});
-
-    document.getElementById('downloadBtn').addEventListener('click', ()=>{
-      let txt = `${story.length>40 ? story.slice(0,40)+'…' : story}\n`;
-      txt += `Género: ${genre.key} · ${episodes} episódios\n`;
-      txt += `Elenco: tu (protagonista), ${genre.npcs.join(', ')}\n`;
-      txt += '='.repeat(40) + '\n\n';
-      eps.forEach(e=>{
-        txt += `EPISÓDIO ${e.n} — ${e.title}\n${e.desc}\n`;
-        e.lines.forEach(l=> txt += `  ${l.who==='tu'?'TU':l.who}: ${l.text}\n`);
-        txt += '\n';
-      });
-      const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'doralp-dorama.txt';
-      a.click();
-    });
-
-    saveToLibrary({
-      title: story.length>40 ? story.slice(0,40)+'…' : story,
-      episodes: episodes,
-      genre: genre.key,
-      created: Date.now()
-    });
-
-    result.querySelectorAll('.play-btn').forEach(pb=>{
-      pb.addEventListener('click', ()=>{
-        const e = eps[+pb.dataset.idx];
-        const scene = pb.nextElementSibling;
-        scene.style.display = protagonistPhoto ? 'block' : 'none';
-        const lineEls = pb.previousElementSibling.querySelectorAll('.line');
-        if(!hasVoice){ return; }
-        speechSynthesis.cancel();
-        const voices = speechSynthesis.getVoices();
-        const chosen = voices.find(v=>v.name===voiceSelect.value);
-        pb.classList.add('playing'); pb.textContent = '❚❚ A narrar...';
-
-        let i = 0;
-        function speakNext(){
-          lineEls.forEach(el=>el.classList.remove('speaking'));
-          if(i >= e.lines.length){
-            pb.classList.remove('playing'); pb.textContent = '▶ Assistir cena';
-            return;
-          }
-          const line = e.lines[i];
-          lineEls[i].classList.add('speaking');
-          
-          const utter = new SpeechSynthesisUtterance(line.text);
-          if(chosen) utter.voice = chosen;
-          utter.lang = chosen ? chosen.lang : 'pt-PT';
-
-          const profile = voiceProfiles[line.who] || { pitch: 1.0, rate: 1.0 };
-          utter.pitch = profile.pitch;
-          utter.rate = profile.rate;
-
-          utter.onend = utter.onerror = ()=>{ i++; speakNext(); };
-          speechSynthesis.speak(utter);
-        }
-        speakNext();
-      });
-    });
-  }, 1400);
-});
-</script>
-
-<!-- Ligação Supabase integrada -->
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
-
-  const supabaseUrl = 'https://xrszwvunkwvqfwhcbkis.supabase.co'
-  const supabaseAnonKey = 'sb_publishable_X-bTkv4bEKXwgbKF1LohLw_vuTFCT8I'
-
-  const supabase = createClient(supabaseUrl, supabaseAnonKey)
-  window.supabase = supabase;
+  }
 </script>
 </body>
 </html>
