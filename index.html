@@ -42,22 +42,23 @@
   .genbtn:disabled{opacity:.5;cursor:wait;}
   .hint{color:var(--muted);font-size:12.5px;margin-top:8px;}
   #result{display:none;margin-top:32px;}
-  .ep-card{border-left:3px solid var(--accent);background:var(--surface);border-radius:0 12px 12px 0;padding:18px 20px;margin-bottom:12px;}
+  .ep-card{border-left:3px solid var(--accent);background:var(--surface);border-radius:0 12px 12px 0;padding:18px 20px;margin-bottom:16px;}
   .ep-card .tag{font-family:'Fraunces',serif;font-style:italic;color:var(--accent2);font-size:13px;}
   .ep-card h3{margin:4px 0 8px;font-size:16px;}
   .ep-card p{margin:0 0 10px;color:var(--muted);font-size:14px;}
-  .play-btn{background:var(--surface2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;}
-  .play-btn.playing{border-color:var(--accent);color:var(--accent2);}
   
-  /* Sistema de Cenas Imersivas (Casas, Ruas, Personagens) */
-  .scene{display:none;width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;margin-top:12px;position:relative;background:#050508;border:1px solid var(--line);}
-  .scene-bg{position:absolute;width:100%;height:100%;object-fit:cover;opacity:0.45;animation:kenburns 10s ease-in-out infinite alternate;}
+  /* Sistema de Cenas e Vídeo Imersivo */
+  .scene{display:none;width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;margin-bottom:12px;position:relative;background:#050508;border:1px solid var(--line);}
+  .scene-bg{position:absolute;width:100%;height:100%;object-fit:cover;opacity:0.5;animation:kenburns 10s ease-in-out infinite alternate;}
   .scene-overlay{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:flex-end;padding:16px;background:linear-gradient(to top, rgba(15,13,19,0.9), transparent);}
   .scene-avatar{width:54px;height:54px;border-radius:50%;border:2px solid var(--accent2);object-fit:cover;background:#222;}
   .scene-npc{width:54px;height:54px;border-radius:50%;border:2px solid var(--accent);object-fit:cover;background:#333;}
   
   @keyframes kenburns{from{transform:scale(1) translate(0,0);}to{transform:scale(1.12) translate(-2%,-1%);}}
   @media (prefers-reduced-motion:reduce){.scene-bg{animation:none;}}
+
+  .play-btn{width:100%;background:var(--surface2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:12px;font-size:14px;cursor:pointer;font-weight:600;margin-top:8px;}
+  .play-btn.playing{border-color:var(--accent);color:var(--accent2);background:var(--bg);}
 
   .cast{display:flex;gap:10px;margin:14px 0 24px;flex-wrap:wrap;}
   .cast div{background:var(--surface2);border:1px solid var(--line);border-radius:20px;padding:6px 14px;font-size:13px;}
@@ -93,7 +94,7 @@
 <div class="wrap">
   <div class="brand"><span class="mark">LP</span></div>
   <h1>DoraLP</h1>
-  <p class="sub">Conta a tua história. Elenco completo, NPCs dinâmicos, cenários e voz sincronizada.</p>
+  <p class="sub">O seu estúdio de doramas. Elenco completo, NPCs vivos, cenários visuais e voz sincronizada.</p>
 
   <div class="tabs">
     <button class="tab active" data-view="lib">Biblioteca</button>
@@ -108,14 +109,14 @@
   <div class="view" id="view-create">
     <div class="step">
       <div class="step-num">01</div>
-      <h2>A tua história (ex: Laiton Flugêncio)</h2>
-      <textarea id="story" placeholder="Ex: Na minha vida passada fui traído... Agora com o Sistema de Evolução do Vilão, Laiton Flugêncio vai dominar a seita e o mundo..."></textarea>
+      <h2>A sua história</h2>
+      <textarea id="story" placeholder="Ex: Na minha vida passada fui traído... Agora com o Sistema de Evolução do Vilão, Laiton Flugêncio vai dominar o império..."></textarea>
     </div>
 
     <div class="step">
       <div class="step-num">02</div>
-      <h2>O protagonista és tu</h2>
-      <p class="hint" style="margin:0 0 12px;">Escolhe a tua foto para aparecer nas cenas de combate e diálogo.</p>
+      <h2>O protagonista é você (Laiton Flugêncio)</h2>
+      <p class="hint" style="margin:0 0 12px;">Escolha a sua foto da galeria para aparecer nas cenas.</p>
       <label class="upload" id="uploadBox">
         <input type="file" id="photoInput" accept="image/*" hidden>
         <span id="uploadText">Escolher foto da galeria</span>
@@ -143,7 +144,7 @@
   <div class="view" id="view-cfg">
     <div class="step">
       <div class="step-num"><span class="status" id="cfgStatus"></span></div>
-      <h2>Ligação ao Supabase & IA</h2>
+      <h2>Configurações do Supabase</h2>
       <div class="cfg-row">
         <label>Supabase URL</label>
         <input id="cfgUrl" placeholder="https://xxxx.supabase.co">
@@ -160,7 +161,7 @@
 <script>
 const voiceSelect = document.getElementById('voiceSelect');
 
-// Abas
+// Navegação por abas
 document.querySelectorAll('.tab').forEach(t=>{
   t.addEventListener('click', ()=>{
     document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
@@ -171,7 +172,7 @@ document.querySelectorAll('.tab').forEach(t=>{
   });
 });
 
-// Supabase Config local storage
+// Supabase Local Storage
 const cfgUrl = document.getElementById('cfgUrl');
 const cfgKey = document.getElementById('cfgKey');
 const cfgStatus = document.getElementById('cfgStatus');
@@ -184,7 +185,7 @@ document.getElementById('cfgSave').addEventListener('click', ()=>{
   localStorage.setItem('doralp_supabase_url', cfgUrl.value.trim());
   localStorage.setItem('doralp_supabase_key', cfgKey.value.trim());
   loadCfg();
-  alert('Configurações salvas com sucesso!');
+  alert('Configurações salvas!');
 });
 loadCfg();
 
@@ -201,7 +202,7 @@ function renderLibrary(){
   const lib = getLibrary();
   const el = document.getElementById('libList');
   if(!lib.length){
-    el.innerHTML = '<div class="lib-empty">Ainda não criaste nenhum dorama. Vai à aba Criar para começar a tua saga.</div>';
+    el.innerHTML = '<div class="lib-empty">Ainda não criou nenhum dorama. Vá à aba Criar para começar.</div>';
     return;
   }
   el.innerHTML = lib.map((d,i)=>`
@@ -250,12 +251,12 @@ photoInput.addEventListener('change', ()=>{
   uploadText.textContent = 'Foto selecionada — trocar';
 });
 
-// Banco de cenários visuais automáticos baseados em ambiente de dorama (Ruas, Casas, Templos, Seitas)
+// Banco de cenários visuais (templos, ruas, casas, mundos de cultivo)
 const backgrounds = [
-  'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&auto=format&fit=crop&q=60', // Templo / Seita antiga
-  'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&auto=format&fit=crop&q=60', // Rua noturna com luzes de néon / cidade fantástica
-  'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=60', // Floresta mística / cultivo
-  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=60'  // Mansão / casa interna de luxo
+  'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&auto=format&fit=crop&q=60',
+  'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&auto=format&fit=crop&q=60',
+  'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=60',
+  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=60'
 ];
 
 const genres = [
@@ -277,7 +278,7 @@ function buildEpisode(n, genre, story, total){
   let desc, lines;
 
   if(n === 0){
-    desc = 'Abertura: O protagonista desperta num mundo impiedoso onde todos o subestimavam.';
+    desc = 'Abertura: O protagonista desperta num mundo implacável onde todos o subestimavam.';
     lines = [
       {who: 'Laiton Flugêncio', text: 'Eles pensaram que podiam descartar-me. O meu sistema vai provar o contrário.'},
       {who: ally, text: 'Tem cuidado, Laiton. Os anciões da seita estão de olho em ti.'}
@@ -298,7 +299,7 @@ function buildEpisode(n, genre, story, total){
   return { n: n+1, title, desc, lines, bg: backgrounds[n % backgrounds.length] };
 }
 
-// Geração do Dorama
+// Botão de Gerar Dorama
 document.getElementById('genBtn').addEventListener('click', ()=>{
   const story = document.getElementById('story').value.trim();
   const episodes = Math.max(1, +epInput.value || 8);
@@ -306,7 +307,7 @@ document.getElementById('genBtn').addEventListener('click', ()=>{
   const result = document.getElementById('result');
   if(!story){ document.getElementById('story').focus(); return; }
 
-  btn.disabled = true; btn.textContent = 'A IA está a estruturar o elenco e cenários...';
+  btn.disabled = true; btn.textContent = 'A estruturar elenco, NPCs e cenários...';
 
   setTimeout(()=>{
     const genre = pickGenre(story);
@@ -322,8 +323,8 @@ document.getElementById('genBtn').addEventListener('click', ()=>{
         <div class="tag">Episódio ${e.n}</div>
         <h3>${e.title}</h3>
         <p>${e.desc}</p>
-        <div class="dialog">${e.lines.map(l=>`<p class="line"><b>${l.who}:</b>${l.text}</p>`).join('')}</div>
-        <button class="play-btn" data-idx="${idx}">▶ Assistir Cena (Dorama)</button>
+        
+        <!-- O Vídeo / Cenário Visual Fica Aqui Acima -->
         <div class="scene" id="scene-${idx}">
           <img class="scene-bg" src="${e.bg}" alt="Cenário">
           <div class="scene-overlay">
@@ -332,6 +333,11 @@ document.getElementById('genBtn').addEventListener('click', ()=>{
             <img class="scene-npc" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100" alt="NPC">
           </div>
         </div>
+
+        <div class="dialog">${e.lines.map(l=>`<p class="line"><b>${l.who}:</b>${l.text}</p>`).join('')}</div>
+        
+        <!-- O Botão de Assistir Cena Fica Exatamente Abaixo do Vídeo/Diálogos -->
+        <button class="play-btn" data-idx="${idx}">▶ Assistir Cena (Dorama)</button>
       </div>
     `).join('');
 
@@ -342,7 +348,7 @@ document.getElementById('genBtn').addEventListener('click', ()=>{
     btn.disabled = false; btn.textContent = 'Gerar Novamente';
     result.scrollIntoView({behavior:'smooth', block:'start'});
 
-    // Download
+    // Download do Roteiro
     document.getElementById('downloadBtn').addEventListener('click', ()=>{
       let txt = `DORAMA: ${story}\nGénero: ${genre.key} · ${episodes} episódios\n\n`;
       eps.forEach(e=>{
@@ -364,14 +370,14 @@ document.getElementById('genBtn').addEventListener('click', ()=>{
       created: Date.now()
     });
 
-    // Reprodução de Voz e Animação de Cenas
+    // Reprodução de Voz e Exibição de Cena
     result.querySelectorAll('.play-btn').forEach(pb=>{
       pb.addEventListener('click', ()=>{
         const idx = +pb.dataset.idx;
         const e = eps[idx];
         const sceneEl = document.getElementById('scene-'+idx);
         const statusTxt = document.getElementById('status-txt-'+idx);
-        const lineEls = pb.previousElementSibling.querySelectorAll('.line');
+        const lineEls = pb.parentElement.querySelectorAll('.line');
 
         sceneEl.style.display = 'block';
         if(!hasVoice){ return; }
@@ -390,7 +396,7 @@ document.getElementById('genBtn').addEventListener('click', ()=>{
             return;
           }
           const line = e.lines[i];
-          lineEls[i].classList.add('speaking');
+          if(lineEls[i]) lineEls[i].classList.add('speaking');
           statusTxt.textContent = `${line.who} a falar...`;
 
           const utter = new SpeechSynthesisUtterance(line.text);
@@ -405,7 +411,7 @@ document.getElementById('genBtn').addEventListener('click', ()=>{
         speakNext();
       });
     });
-  }, 1200);
+  }, 1000);
 });
 </script>
 </body>
