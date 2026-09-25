@@ -318,7 +318,6 @@ document.getElementById('genBtn').addEventListener('click', ()=>{
     const genre = pickGenre(story);
     const eps = Array.from({length: episodes}, (_,i)=> buildEpisode(i, genre, story, episodes));
 
-    // Perfis vocais fixos para os NPCs e para ti do Ep 1 até ao fim
     const voiceProfiles = {
       'tu': { pitch: 1.0, rate: 1.0 },
     };
@@ -414,6 +413,17 @@ document.getElementById('genBtn').addEventListener('click', ()=>{
     });
   }, 1400);
 });
+</script>
+
+<!-- Ligação Supabase integrada -->
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+
+  const supabaseUrl = 'https://xrszwvunkwvqfwhcbkis.supabase.co'
+  const supabaseAnonKey = 'sb_publishable_X-bTkv4bEKXwgbKF1LohLw_vuTFCT8I'
+
+  const supabase = createClient(supabaseUrl, supabaseAnonKey)
+  window.supabase = supabase;
 </script>
 </body>
 </html>
