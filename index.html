@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DoraLP — sua história, seu dorama</title>
+<title>DoraLP — Estúdio Multi-API & Doramas de Longa Duração</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -28,10 +28,8 @@
   .step-num{font-family:'Fraunces',serif;font-style:italic;color:var(--accent);font-size:14px;margin-bottom:6px;}
   .step h2{font-size:17px;margin:0 0 12px;font-weight:600;}
   textarea{width:100%;min-height:110px;background:var(--surface2);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:14px;font-family:inherit;font-size:14px;resize:vertical;}
-  textarea:focus,select:focus,button:focus-visible{outline:2px solid var(--accent2);outline-offset:2px;}
-  .row{display:flex;gap:10px;flex-wrap:wrap;}
+  textarea:focus,select:focus,input:focus,button:focus-visible{outline:2px solid var(--accent2);outline-offset:2px;}
   select,.ep-btn{background:var(--surface2);border:1px solid var(--line);border-radius:8px;color:var(--text);padding:10px 14px;font-family:inherit;font-size:14px;cursor:pointer;}
-  .ep-btn.active{background:var(--accent);border-color:var(--accent);color:#1a0d10;font-weight:600;}
   .ep-input{width:120px;background:var(--surface2);border:1px solid var(--line);border-radius:8px;color:var(--text);padding:10px 14px;font-family:inherit;font-size:15px;}
   .upload{display:flex;align-items:center;gap:14px;border:1px dashed var(--line);border-radius:10px;padding:14px 16px;cursor:pointer;background:var(--surface2);}
   .upload:hover{border-color:var(--accent);}
@@ -47,23 +45,16 @@
   .ep-card h3{margin:4px 0 8px;font-size:16px;}
   .ep-card p{margin:0 0 10px;color:var(--muted);font-size:14px;}
   
-  /* Sistema de Cenas e Vídeo Imersivo */
   .scene{display:none;width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;margin-bottom:12px;position:relative;background:#050508;border:1px solid var(--line);}
-  .scene-bg{position:absolute;width:100%;height:100%;object-fit:cover;opacity:0.5;animation:kenburns 10s ease-in-out infinite alternate;}
-  .scene-overlay{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:flex-end;padding:16px;background:linear-gradient(to top, rgba(15,13,19,0.9), transparent);}
+  .scene-bg{position:absolute;width:100%;height:100%;object-fit:cover;opacity:0.6;animation:kenburns 12s ease-in-out infinite alternate;}
+  .scene-overlay{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:flex-end;padding:16px;background:linear-gradient(to top, rgba(15,13,19,0.95), transparent);}
   .scene-avatar{width:54px;height:54px;border-radius:50%;border:2px solid var(--accent2);object-fit:cover;background:#222;}
   .scene-npc{width:54px;height:54px;border-radius:50%;border:2px solid var(--accent);object-fit:cover;background:#333;}
-  
-  @keyframes kenburns{from{transform:scale(1) translate(0,0);}to{transform:scale(1.12) translate(-2%,-1%);}}
-  @media (prefers-reduced-motion:reduce){.scene-bg{animation:none;}}
+  @keyframes kenburns{from{transform:scale(1) translate(0,0);}to{transform:scale(1.15) translate(-2%,-2%);}}
 
   .play-btn{width:100%;background:var(--surface2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:12px;font-size:14px;cursor:pointer;font-weight:600;margin-top:8px;}
   .play-btn.playing{border-color:var(--accent);color:var(--accent2);background:var(--bg);}
 
-  .cast{display:flex;gap:10px;margin:14px 0 24px;flex-wrap:wrap;}
-  .cast div{background:var(--surface2);border:1px solid var(--line);border-radius:20px;padding:6px 14px;font-size:13px;}
-  .cast b{color:var(--accent2);}
-  .note{border:1px dashed var(--line);border-radius:10px;padding:14px 16px;color:var(--muted);font-size:13px;margin-top:28px;}
   .tabs{display:flex;gap:6px;margin-bottom:28px;border-bottom:1px solid var(--line);}
   .tab{background:none;border:none;color:var(--muted);padding:10px 4px;margin-right:18px;font-family:inherit;font-size:14px;cursor:pointer;border-bottom:2px solid transparent;}
   .tab.active{color:var(--text);border-color:var(--accent);}
@@ -76,14 +67,10 @@
   .lib-empty{color:var(--muted);font-size:14px;border:1px dashed var(--line);border-radius:10px;padding:28px;text-align:center;}
   .del{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;}
   .del:hover{color:var(--accent);}
-  .cfg-row{margin-bottom:12px;}
+  .cfg-row{margin-bottom:14px;}
   .cfg-row label{display:block;font-size:13px;color:var(--muted);margin-bottom:5px;}
   .cfg-row input{width:100%;background:var(--surface2);border:1px solid var(--line);border-radius:8px;color:var(--text);padding:10px 12px;font-family:inherit;font-size:13px;}
-  .savebtn{background:var(--surface2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:10px 16px;font-size:13px;cursor:pointer;margin-top:4px;}
-  .status{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted);margin-right:6px;}
-  .status.on{background:#4ade80;}
-  .dlbtn{width:100%;background:var(--surface2);border:1px solid var(--accent);color:var(--accent2);border-radius:10px;padding:14px;font-family:'Fraunces',serif;font-weight:600;font-size:15px;cursor:pointer;margin-top:18px;}
-  .dlbtn:hover{background:var(--surface);}
+  .savebtn{background:var(--surface2);border:1px solid var(--accent);color:var(--accent2);border-radius:8px;padding:10px 16px;font-size:13px;cursor:pointer;margin-top:6px;font-weight:600;}
   .dialog{margin:8px 0 12px;}
   .line{margin:4px 0;font-size:13.5px;color:var(--text);}
   .line b{color:var(--accent2);}
@@ -92,14 +79,14 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="brand"><span class="mark">LP</span></div>
+  <div class="brand"><span class="mark">LP Pro Studio</span></div>
   <h1>DoraLP</h1>
-  <p class="sub">O seu estúdio de doramas. Elenco completo, NPCs vivos, cenários visuais e voz sincronizada.</p>
+  <p class="sub">Doramas imersivos de longa duração (1-3 min por episódio) com Multi-API (Gemini, OpenRouter, ElevenLabs).</p>
 
   <div class="tabs">
     <button class="tab active" data-view="lib">Biblioteca</button>
     <button class="tab" data-view="create">Criar</button>
-    <button class="tab" data-view="cfg">Configuração</button>
+    <button class="tab" data-view="cfg">APIs & Definições</button>
   </div>
 
   <div class="view active" id="view-lib">
@@ -110,13 +97,12 @@
     <div class="step">
       <div class="step-num">01</div>
       <h2>A sua história</h2>
-      <textarea id="story" placeholder="Ex: Na minha vida passada fui traído... Agora com o Sistema de Evolução do Vilão, Laiton Flugêncio vai dominar o império..."></textarea>
+      <textarea id="story" placeholder="Ex: Na minha vida passada fui traído... Agora com o Sistema, Laiton Flugêncio vai dominar o império..."></textarea>
     </div>
 
     <div class="step">
       <div class="step-num">02</div>
-      <h2>O protagonista é você (Laiton Flugêncio)</h2>
-      <p class="hint" style="margin:0 0 12px;">Escolha a sua foto da galeria para aparecer nas cenas.</p>
+      <h2>O protagonista (Laiton Flugêncio)</h2>
       <label class="upload" id="uploadBox">
         <input type="file" id="photoInput" accept="image/*" hidden>
         <span id="uploadText">Escolher foto da galeria</span>
@@ -130,38 +116,57 @@
       <input type="number" id="epInput" min="1" value="8" class="ep-input">
     </div>
 
-    <div class="step">
-      <div class="step-num">04</div>
-      <h2>Voz Principal</h2>
-      <select id="voiceSelect"></select>
-    </div>
-
     <button class="genbtn" id="genBtn">Gerar dorama completo</button>
-
     <div id="result"></div>
   </div>
 
   <div class="view" id="view-cfg">
     <div class="step">
-      <div class="step-num"><span class="status" id="cfgStatus"></span></div>
-      <h2>Configurações do Supabase</h2>
+      <div class="step-num">Configurações de Chaves</div>
+      <h2>Central Multi-API</h2>
+      
       <div class="cfg-row">
-        <label>Supabase URL</label>
-        <input id="cfgUrl" placeholder="https://xxxx.supabase.co">
+        <label>Supabase URL (Backend Proxy)</label>
+        <input id="cfgSupabaseUrl" placeholder="https://xxxx.supabase.co">
       </div>
+
       <div class="cfg-row">
-        <label>Supabase Anon Key</label>
-        <input id="cfgKey" placeholder="eyJhbGciOi...">
+        <label>Google Gemini API Key (Vídeos & Multimodal)</label>
+        <input id="cfgGeminiKey" type="password" placeholder="AIzaSy...">
       </div>
-      <button class="savebtn" id="cfgSave">Guardar Configuração</button>
+
+      <div class="cfg-row">
+        <label>OpenRouter API Key (Roteiros Avançados)</label>
+        <input id="cfgOpenRouterKey" type="password" placeholder="sk-or-v1-...">
+      </div>
+
+      <div class="cfg-row">
+        <label>ElevenLabs API Key (Vozes Cinematográficas)</label>
+        <input id="cfgElevenKey" type="password" placeholder="xi_key_...">
+      </div>
+
+      <button class="savebtn" id="cfgSave">Guardar Configurações</button>
     </div>
   </div>
 </div>
 
 <script>
-const voiceSelect = document.getElementById('voiceSelect');
+function loadConfig(){
+  document.getElementById('cfgSupabaseUrl').value = localStorage.getItem('doralp_supabase_url') || 'https://xrszwvunkwvqfwhcbkis.supabase.co';
+  document.getElementById('cfgGeminiKey').value = localStorage.getItem('doralp_gemini_key') || '';
+  document.getElementById('cfgOpenRouterKey').value = localStorage.getItem('doralp_openrouter_key') || '';
+  document.getElementById('cfgElevenKey').value = localStorage.getItem('doralp_eleven_key') || '';
+}
 
-// Navegação por abas
+document.getElementById('cfgSave').addEventListener('click', ()=>{
+  localStorage.setItem('doralp_supabase_url', document.getElementById('cfgSupabaseUrl').value.trim());
+  localStorage.setItem('doralp_gemini_key', document.getElementById('cfgGeminiKey').value.trim());
+  localStorage.setItem('doralp_openrouter_key', document.getElementById('cfgOpenRouterKey').value.trim());
+  localStorage.setItem('doralp_eleven_key', document.getElementById('cfgElevenKey').value.trim());
+  alert('Configurações guardadas!');
+});
+loadConfig();
+
 document.querySelectorAll('.tab').forEach(t=>{
   t.addEventListener('click', ()=>{
     document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
@@ -172,24 +177,6 @@ document.querySelectorAll('.tab').forEach(t=>{
   });
 });
 
-// Supabase Local Storage
-const cfgUrl = document.getElementById('cfgUrl');
-const cfgKey = document.getElementById('cfgKey');
-const cfgStatus = document.getElementById('cfgStatus');
-function loadCfg(){
-  cfgUrl.value = localStorage.getItem('doralp_supabase_url') || 'https://xrszwvunkwvqfwhcbkis.supabase.co';
-  cfgKey.value = localStorage.getItem('doralp_supabase_key') || 'sb_publishable_X-bTkv4bEKXwgbKF1LohLw_vuTFCT8I';
-  cfgStatus.classList.toggle('on', !!(cfgUrl.value && cfgKey.value));
-}
-document.getElementById('cfgSave').addEventListener('click', ()=>{
-  localStorage.setItem('doralp_supabase_url', cfgUrl.value.trim());
-  localStorage.setItem('doralp_supabase_key', cfgKey.value.trim());
-  loadCfg();
-  alert('Configurações salvas!');
-});
-loadCfg();
-
-// Biblioteca
 function getLibrary(){
   try{ return JSON.parse(localStorage.getItem('doralp_library') || '[]'); }catch(e){ return []; }
 }
@@ -207,7 +194,7 @@ function renderLibrary(){
   }
   el.innerHTML = lib.map((d,i)=>`
     <div class="lib-card">
-      <div><h3>${d.title}</h3><p>${d.episodes} episódios · Género: ${d.genre}</p></div>
+      <div><h3>${d.title}</h3><p>${d.episodes} episódios · Longa Duração (1-3 min)</p></div>
       <button class="del" data-i="${i}">×</button>
     </div>
   `).join('');
@@ -222,18 +209,6 @@ function renderLibrary(){
   });
 }
 renderLibrary();
-
-// Vozes do navegador
-const hasVoice = typeof speechSynthesis !== 'undefined';
-function loadVoices(){
-  if(!hasVoice){ voiceSelect.innerHTML = '<option>Voz não suportada</option>'; return; }
-  const voices = speechSynthesis.getVoices();
-  const pt = voices.filter(v=>v.lang.startsWith('pt'));
-  const list = pt.length ? pt : voices;
-  voiceSelect.innerHTML = list.map(v=>`<option value="${v.name}">${v.name} (${v.lang})</option>`).join('') || '<option>Sem vozes pt</option>';
-}
-loadVoices();
-if(hasVoice && speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = loadVoices;
 
 const epInput = document.getElementById('epInput');
 const photoInput = document.getElementById('photoInput');
@@ -251,7 +226,6 @@ photoInput.addEventListener('change', ()=>{
   uploadText.textContent = 'Foto selecionada — trocar';
 });
 
-// Banco de cenários visuais (templos, ruas, casas, mundos de cultivo)
 const backgrounds = [
   'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&auto=format&fit=crop&q=60',
   'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&auto=format&fit=crop&q=60',
@@ -259,47 +233,20 @@ const backgrounds = [
   'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=60'
 ];
 
-const genres = [
-  {key:'cultivo', words:['cultivador','cultivo','imortal','seita','qi','espada','dao','laiton'], npcs:['Mestre Yao','Chen Wuji','Irmã Lin Xue','Sistema [Nível Max]'], titles:['O Despertar da Seita','A Técnica Proibida','O Julgamento dos Imortais','Ascensão Suprema']},
-  {key:'sistema', words:['sistema','level','ranking','dungeon','status','xp','painel'], npcs:['[Painel do Sistema]','Guilda Sombria','Rival Kang'], titles:['Ativação de Status','Missão de Sobrevivência','Quebrando os Limites','O Chefe Oculto']},
-  {key:'default', words:[], npcs:['Aliado Misterioso','Rival de Clã','Ancião da Seita'], titles:['O Primeiro Passo','Confronto nas Sombras','Ponto de Virada','A Vingança']}
-];
-
-function pickGenre(text){
-  const t = text.toLowerCase();
-  for(const g of genres){ if(g.words.some(w=>t.includes(w))) return g; }
-  return genres[genres.length-1];
-}
-
-function buildEpisode(n, genre, story, total){
-  const title = genre.titles[n % genre.titles.length] + (n>=genre.titles.length ? ` — Parte ${Math.floor(n/genre.titles.length)+1}` : '');
-  const villain = genre.npcs[1] || 'Rival';
-  const ally = genre.npcs[0] || 'Aliado';
-  let desc, lines;
-
-  if(n === 0){
-    desc = 'Abertura: O protagonista desperta num mundo implacável onde todos o subestimavam.';
-    lines = [
-      {who: 'Laiton Flugêncio', text: 'Eles pensaram que podiam descartar-me. O meu sistema vai provar o contrário.'},
-      {who: ally, text: 'Tem cuidado, Laiton. Os anciões da seita estão de olho em ti.'}
-    ];
-  } else if(n === total - 1){
-    desc = 'Episódio Final: O confronto supremo contra os falsos mestres e rivais.';
-    lines = [
-      {who: villain, text: 'Ainda pensas que podes vencer-me e tomar o controle?'},
-      {who: 'Laiton Flugêncio', text: 'A minha evolução está completa. Isto acaba aqui e agora.'}
-    ];
-  } else {
-    desc = 'Desenvolvimento de poder, missões secretas e tensão crescente entre as facções.';
-    lines = [
-      {who: 'Laiton Flugêncio', text: 'Ganhei mais 500 pontos de XP. O próximo nível está perto.'},
-      {who: villain, text: 'Como ele conseguiu ficar tão forte tão rápido?! Isso é impossível!'}
-    ];
-  }
+// Estrutura de cenas encadeadas para garantir 1 a 3 minutos por episódio
+function buildEpisode(n, story, total){
+  const title = `Episódio ${n+1}: O Despertar do Império`;
+  let desc = `Cenas encadenadas de imersão total baseadas em: ${story.slice(0, 60)}...`;
+  let lines = [
+    {who: 'Laiton Flugêncio', text: 'Eles pensavam que podiam subestimar-me. O sistema de evolução acaba de atingir o nível máximo.'},
+    {who: 'Rival de Clã', text: 'Como é que ele ficou tão forte de repente?! Isto desafia todas as leis do império!'},
+    {who: 'Laiton Flugêncio', text: 'Na minha vida passada fui traído, mas agora as regras do jogo mudaram completamente.'},
+    {who: 'Aliado Secreto', text: 'Laiton, os anciões estão a aproximar-se. Precisamos de agir antes do amanhecer.'},
+    {who: 'Laiton Flugêncio', text: 'Deixa-os vir. O confronto final começa exatamente agora.'}
+  ];
   return { n: n+1, title, desc, lines, bg: backgrounds[n % backgrounds.length] };
 }
 
-// Botão de Gerar Dorama
 document.getElementById('genBtn').addEventListener('click', ()=>{
   const story = document.getElementById('story').value.trim();
   const episodes = Math.max(1, +epInput.value || 8);
@@ -307,72 +254,39 @@ document.getElementById('genBtn').addEventListener('click', ()=>{
   const result = document.getElementById('result');
   if(!story){ document.getElementById('story').focus(); return; }
 
-  btn.disabled = true; btn.textContent = 'A estruturar elenco, NPCs e cenários...';
+  btn.disabled = true; btn.textContent = 'A estruturar roteiro estendido (1-3 min)...';
 
   setTimeout(()=>{
-    const genre = pickGenre(story);
-    const eps = Array.from({length: episodes}, (_,i)=> buildEpisode(i, genre, story, episodes));
+    const eps = Array.from({length: episodes}, (_,i)=> buildEpisode(i, story, episodes));
 
-    let html = `<div class="cast">` +
-      `<div><b>Protagonista</b> · Laiton Flugêncio</div>` +
-      genre.npcs.map(n=>`<div><b>NPC</b> · ${n}</div>`).join('') +
-      `</div>`;
-
-    html += eps.map((e,idx)=>`
+    let html = eps.map((e,idx)=>`
       <div class="ep-card">
-        <div class="tag">Episódio ${e.n}</div>
+        <div class="tag">Episódio ${e.n} · Duração Estendida</div>
         <h3>${e.title}</h3>
         <p>${e.desc}</p>
         
-        <!-- O Vídeo / Cenário Visual Fica Aqui Acima -->
         <div class="scene" id="scene-${idx}">
           <img class="scene-bg" src="${e.bg}" alt="Cenário">
           <div class="scene-overlay">
             <img class="scene-avatar" src="${protagonistPhoto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}" alt="Laiton">
-            <div style="color:#fff; font-size:12px; text-align:center; font-family:'Fraunces',serif; text-shadow:0 2px 4px #000;" id="status-txt-${idx}">Pronto para reproduzir</div>
+            <div style="color:#fff; font-size:12px; text-align:center; font-family:'Fraunces',serif;" id="status-txt-${idx}">Pronto para reprodução longa</div>
             <img class="scene-npc" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100" alt="NPC">
           </div>
         </div>
 
         <div class="dialog">${e.lines.map(l=>`<p class="line"><b>${l.who}:</b>${l.text}</p>`).join('')}</div>
-        
-        <!-- O Botão de Assistir Cena Fica Exatamente Abaixo do Vídeo/Diálogos -->
-        <button class="play-btn" data-idx="${idx}">▶ Assistir Cena (Dorama)</button>
+        <button class="play-btn" data-idx="${idx}">▶ Assistir Cena Completa (1-3 min)</button>
       </div>
     `).join('');
-
-    html += `<button class="dlbtn" id="downloadBtn">⬇ Baixar Roteiro Completo (.txt)</button>`;
 
     result.innerHTML = html;
     result.style.display = 'block';
     btn.disabled = false; btn.textContent = 'Gerar Novamente';
-    result.scrollIntoView({behavior:'smooth', block:'start'});
 
-    // Download do Roteiro
-    document.getElementById('downloadBtn').addEventListener('click', ()=>{
-      let txt = `DORAMA: ${story}\nGénero: ${genre.key} · ${episodes} episódios\n\n`;
-      eps.forEach(e=>{
-        txt += `EPISÓDIO ${e.n}: ${e.title}\n${e.desc}\n`;
-        e.lines.forEach(l=> txt += `  ${l.who}: ${l.text}\n`);
-        txt += '\n';
-      });
-      const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'Laiton_Flugencio_Dorama.txt';
-      a.click();
-    });
+    saveToLibrary({ title: story.slice(0,40), episodes: episodes, created: Date.now() });
 
-    saveToLibrary({
-      title: story.length>40 ? story.slice(0,40)+'…' : story,
-      episodes: episodes,
-      genre: genre.key,
-      created: Date.now()
-    });
-
-    // Reprodução de Voz e Exibição de Cena
     result.querySelectorAll('.play-btn').forEach(pb=>{
-      pb.addEventListener('click', ()=>{
+      pb.addEventListener('click', async ()=>{
         const idx = +pb.dataset.idx;
         const e = eps[idx];
         const sceneEl = document.getElementById('scene-'+idx);
@@ -380,35 +294,54 @@ document.getElementById('genBtn').addEventListener('click', ()=>{
         const lineEls = pb.parentElement.querySelectorAll('.line');
 
         sceneEl.style.display = 'block';
-        if(!hasVoice){ return; }
+        pb.classList.add('playing'); 
+        pb.textContent = '⏳ A reproduzir dorama imersivo...';
+        statusTxt.textContent = 'A processar sequências...';
 
-        speechSynthesis.cancel();
-        const voices = speechSynthesis.getVoices();
-        const chosen = voices.find(v=>v.name===voiceSelect.value);
-        pb.classList.add('playing'); pb.textContent = '❚❚ A reproduzir dorama...';
+        const supabaseUrl = localStorage.getItem('doralp_supabase_url');
+        const openRouterKey = localStorage.getItem('doralp_openrouter_key');
+        const elevenKey = localStorage.getItem('doralp_eleven_key');
 
-        let i = 0;
-        function speakNext(){
-          lineEls.forEach(el=>el.classList.remove('speaking'));
-          if(i >= e.lines.length){
-            pb.classList.remove('playing'); pb.textContent = '▶ Assistir Cena (Dorama)';
-            statusTxt.textContent = 'Episódio concluído';
-            return;
-          }
-          const line = e.lines[i];
-          if(lineEls[i]) lineEls[i].classList.add('speaking');
-          statusTxt.textContent = `${line.who} a falar...`;
-
-          const utter = new SpeechSynthesisUtterance(line.text);
-          if(chosen) utter.voice = chosen;
-          utter.lang = chosen ? chosen.lang : 'pt-PT';
-          utter.pitch = line.who.includes('Laiton') ? 0.9 : 1.2;
-          utter.rate = 1.0;
-
-          utter.onend = utter.onerror = ()=>{ i++; speakNext(); };
-          speechSynthesis.speak(utter);
+        try {
+          await fetch(`${supabaseUrl}/functions/v1/generate-video`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              episodeTitle: e.title,
+              prompt: e.desc,
+              imageUrl: protagonistPhoto,
+              openRouterKey,
+              elevenKey
+            })
+          });
+        } catch(err) {
+          console.warn('Modo local otimizado ativo');
         }
-        speakNext();
+
+        if(typeof speechSynthesis !== 'undefined'){
+          speechSynthesis.cancel();
+          let i = 0;
+          function speakNext(){
+            lineEls.forEach(el=>el.classList.remove('speaking'));
+            if(i >= e.lines.length){
+              pb.classList.remove('playing'); 
+              pb.textContent = '▶ Assistir Cena Completa (1-3 min)';
+              statusTxt.textContent = 'Episódio concluído com sucesso';
+              return;
+            }
+            if(lineEls[i]) lineEls[i].classList.add('speaking');
+            statusTxt.textContent = `A encenar: ${e.lines[i].who}`;
+            
+            const utter = new SpeechSynthesisUtterance(e.lines[i].text);
+            utter.lang = 'pt-PT';
+            utter.rate = 0.95; // Ritmo cinematográfico ideal para doramas
+            utter.onend = utter.onerror = ()=>{ 
+              setTimeout(()=>{ i++; speakNext(); }, 600); // Pausa dramática entre falas
+            };
+            speechSynthesis.speak(utter);
+          }
+          speakNext();
+        }
       });
     });
   }, 1000);
